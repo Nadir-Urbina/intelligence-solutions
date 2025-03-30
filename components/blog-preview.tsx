@@ -1,85 +1,130 @@
-"use client"
-
-import { useRef } from "react"
-import { useInView } from "framer-motion"
+import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
+import { getBlogPosts } from "@/src/sanity/lib/client"
+import { format } from "date-fns"
+import { urlFor } from "@/src/sanity/lib/client"
 
-const blogPosts = [
+// Fallback blog posts when none are available from Sanity
+const fallbackPosts = [
   {
+    _id: "fallback1",
     title: "Integrating Faith in Business Leadership",
+    slug: { current: "#" },
+    author: "Tom Ledbetter",
     excerpt: "Discover practical ways to lead your business with faith-based principles that drive growth and purpose.",
-    date: "March 15, 2024",
-    image: "/placeholder.svg?height=300&width=500",
-    author: "Tom Ledbetter",
+    mainImage: null,
+    publishedAt: new Date(new Date().setDate(new Date().getDate() - 15)).toISOString(),
+    categories: ["Leadership", "Faith"]
   },
   {
+    _id: "fallback2",
     title: "Building a Kingdom Culture in Your Workplace",
-    excerpt: "Learn how to create a workplace environment that honors God while fostering creativity and productivity.",
-    date: "February 28, 2024",
-    image: "/placeholder.svg?height=300&width=500",
+    slug: { current: "#" },
     author: "Wayland Henderson",
+    excerpt: "Learn how to create a workplace environment that honors God while fostering creativity and productivity.",
+    mainImage: null,
+    publishedAt: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString(),
+    categories: ["Culture", "Workplace"]
   },
   {
+    _id: "fallback3",
     title: "The ROI of Faith-Based Business Practices",
-    excerpt: "Explore how kingdom principles in business can lead to measurable returns and sustainable growth.",
-    date: "January 22, 2024",
-    image: "/placeholder.svg?height=300&width=500",
+    slug: { current: "#" },
     author: "Tom Ledbetter",
-  },
+    excerpt: "Explore how kingdom principles in business can lead to measurable returns and sustainable growth.",
+    mainImage: null,
+    publishedAt: new Date(new Date().setDate(new Date().getDate() - 45)).toISOString(),
+    categories: ["Business", "ROI"]
+  }
 ]
 
-export default function BlogPreview() {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, amount: 0.1 })
+export default async function BlogPreview() {
+  let posts = []
+  
+  try {
+    posts = await getBlogPosts()
+  } catch (error) {
+    console.error("Error fetching blog posts:", error)
+  }
+  
+  // Use fallback data if no posts are available from Sanity
+  if (!posts || posts.length === 0) {
+    posts = fallbackPosts
+  }
+  
+  // Only display up to 3 blog posts on the homepage
+  const displayedPosts = posts.slice(0, 3)
 
   return (
-    <section id="blog" className="py-20 bg-secondary/20">
-      <div className="container">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16">
+    <section id="blog" className="py-16 md:py-24 bg-secondary/10">
+      <div className="container px-4 sm:px-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 md:mb-16">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Latest Insights</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl">
-              Thoughts and strategies on kingdom business principles.
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
+              Latest Insights
+            </h2>
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl">
+              Expert perspectives, industry trends, and thought leadership from our team.
             </p>
-            <div className="w-20 h-1 bg-primary mt-4"></div>
           </div>
-          <Button variant="link" className="mt-4 md:mt-0">
-            View All Articles <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
+          <Link href="/blog" className="mt-6 md:mt-0">
+            <Button variant="outline" className="group w-full sm:w-auto text-sm">
+              View all posts
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Button>
+          </Link>
         </div>
 
-        <div ref={ref} className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogPosts.map((post, index) => (
-            <div
-              key={post.title}
-              className={`group overflow-hidden rounded-lg bg-card transition-all duration-700 delay-${index * 100} ${
-                isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
-              }`}
-            >
-              <div className="relative h-48 w-full overflow-hidden">
-                <Image
-                  src={post.image || "/placeholder.svg"}
-                  alt={post.title}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              </div>
-              <div className="p-6">
-                <div className="flex items-center text-sm text-muted-foreground mb-3">
-                  <span>{post.date}</span>
-                  <span className="mx-2">•</span>
-                  <span>{post.author}</span>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {displayedPosts.map((post: any) => {
+            // Check if we have a valid image to display
+            const hasValidImage = post.mainImage && 
+                                post.mainImage.asset && 
+                                (post.mainImage.asset.url || post.mainImage.asset._ref);
+            
+            // Get the image URL using urlFor if we have a reference
+            const imageUrl = hasValidImage ? 
+              (post.mainImage.asset.url || urlFor(post.mainImage).url()) : 
+              null;
+              
+            return (
+              <Link
+                key={post._id}
+                href={post.slug.current !== "#" ? `/blog/${post.slug.current}` : "#"}
+                className="group flex flex-col h-full"
+              >
+                <div className="overflow-hidden rounded-lg mb-4">
+                  <div className="relative aspect-[4/3]">
+                    {imageUrl ? (
+                      <Image
+                        src={imageUrl}
+                        alt={post.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-secondary flex items-center justify-center">
+                        <p className="text-secondary-foreground">{post.categories && post.categories[0] || "Blog"}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{post.title}</h3>
-                <p className="text-muted-foreground mb-4">{post.excerpt}</p>
-                <Button variant="link" className="p-0 h-auto font-medium">
-                  Read More <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 group-hover:text-primary transition-colors">
+                  {post.title}
+                </h3>
+                <div className="flex flex-wrap items-center text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
+                  <p>{post.author}</p>
+                  <span className="mx-2">•</span>
+                  <p>{format(new Date(post.publishedAt), "MMMM d, yyyy")}</p>
+                </div>
+                <p className="text-sm sm:text-base line-clamp-3 text-muted-foreground mt-auto">
+                  {post.excerpt}
+                </p>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>

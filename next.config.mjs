@@ -15,11 +15,32 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cdn.sanity.io',
+        pathname: '**',
+      },
+    ],
   },
   experimental: {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
+  },
+  redirects: async () => {
+    return [
+      {
+        source: '/case-studies',
+        destination: '/case-studies',
+        permanent: true,
+      },
+      {
+        source: '/blog',
+        destination: '/blog',
+        permanent: true,
+      },
+    ]
   },
 }
 

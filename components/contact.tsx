@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Mail, Phone, MapPin, Send } from "lucide-react"
+import { toast } from "@/components/ui/use-toast"
 
 export default function Contact() {
   const ref = useRef(null)
@@ -20,6 +21,7 @@ export default function Contact() {
     company: "",
     message: "",
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormState({
@@ -28,64 +30,97 @@ export default function Contact() {
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Form submission logic would go here
-    console.log(formState)
-    alert("Thank you for your message. We'll be in touch soon!")
-    setFormState({
-      name: "",
-      email: "",
-      phone: "",
-      company: "",
-      message: "",
-    })
+    
+    // Form submission logic
+    setIsSubmitting(true)
+    
+    try {
+      const response = await fetch('/api/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formState),
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message')
+      }
+      
+      // Success message
+      toast({
+        title: "Message Sent",
+        description: "Thank you for your message. We'll be in touch soon!",
+      })
+      
+      // Reset form
+      setFormState({
+        name: "",
+        email: "",
+        phone: "",
+        company: "",
+        message: "",
+      })
+    } catch (error) {
+      // Error message
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <section id="contact" className="py-20">
-      <div ref={ref} className="container">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Contact Us</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+    <section id="contact" className="py-16 md:py-24">
+      <div ref={ref} className="container px-4 sm:px-6">
+        <div className="text-center mb-10 md:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 md:mb-4">Contact Us</h2>
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
             Ready to transform your business with kingdom principles? Get in touch with us today.
           </p>
           <div className="w-20 h-1 bg-primary mx-auto mt-4"></div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 max-w-5xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-8 md:gap-12 max-w-5xl mx-auto">
           <div
             className={`transition-all duration-700 delay-100 ${
               isInView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12"
             }`}
           >
-            <h3 className="text-2xl font-bold mb-6">Get In Touch</h3>
-            <p className="text-muted-foreground mb-8">
+            <h3 className="text-xl sm:text-2xl font-bold mb-4 md:mb-6">Get In Touch</h3>
+            <p className="text-sm sm:text-base text-muted-foreground mb-6 md:mb-8">
               We'd love to hear from you. Fill out the form and we'll get back to you as soon as possible.
             </p>
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div className="flex items-start">
-                <Mail className="h-6 w-6 text-primary mr-4 mt-0.5" />
+                <Mail className="h-5 w-5 sm:h-6 sm:w-6 text-primary mr-3 sm:mr-4 mt-0.5" />
                 <div>
-                  <h4 className="font-bold">Email</h4>
-                  <p className="text-muted-foreground">info@intelligencesolutions.com</p>
+                  <h4 className="font-bold text-sm sm:text-base">Email</h4>
+                  <p className="text-sm text-muted-foreground">info@intelligencesolutions.com</p>
                 </div>
               </div>
 
               <div className="flex items-start">
-                <Phone className="h-6 w-6 text-primary mr-4 mt-0.5" />
+                <Phone className="h-5 w-5 sm:h-6 sm:w-6 text-primary mr-3 sm:mr-4 mt-0.5" />
                 <div>
-                  <h4 className="font-bold">Phone</h4>
-                  <p className="text-muted-foreground">(555) 123-4567</p>
+                  <h4 className="font-bold text-sm sm:text-base">Phone</h4>
+                  <p className="text-sm text-muted-foreground">(555) 123-4567</p>
                 </div>
               </div>
 
               <div className="flex items-start">
-                <MapPin className="h-6 w-6 text-primary mr-4 mt-0.5" />
+                <MapPin className="h-5 w-5 sm:h-6 sm:w-6 text-primary mr-3 sm:mr-4 mt-0.5" />
                 <div>
-                  <h4 className="font-bold">Location</h4>
-                  <p className="text-muted-foreground">Dallas, Texas</p>
+                  <h4 className="font-bold text-sm sm:text-base">Location</h4>
+                  <p className="text-sm text-muted-foreground">Dallas, Texas</p>
                 </div>
               </div>
             </div>
@@ -96,7 +131,7 @@ export default function Contact() {
               isInView ? "opacity-100 translate-x-0" : "opacity-0 translate-x-12"
             }`}
           >
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
@@ -138,8 +173,8 @@ export default function Contact() {
                 />
               </div>
 
-              <Button type="submit" size="lg" className="w-full">
-                Send Message <Send className="ml-2 h-4 w-4" />
+              <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? "Sending..." : "Send Message"} <Send className="ml-2 h-4 w-4" />
               </Button>
             </form>
           </div>

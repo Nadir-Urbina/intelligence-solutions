@@ -1,78 +1,133 @@
-"use client"
-
-import { useRef } from "react"
-import { useInView } from "framer-motion"
+import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
+import { getCaseStudies } from "@/src/sanity/lib/client"
+import { format } from "date-fns"
+import { urlFor } from "@/src/sanity/lib/client"
 
-const caseStudies = [
+// Fallback case studies when none are available from Sanity
+const fallbackCaseStudies = [
   {
+    _id: "fallback1",
     title: "Nedderman Construction Group",
-    description:
-      "Helped scale from $20M to $30M annual revenue through kingdom-focused business strategies and leadership development.",
-    image: "/placeholder.svg?height=400&width=600",
-    tag: "Construction",
+    slug: { current: "#" },
+    client: "Nedderman Construction",
+    excerpt: "Helped scale from $20M to $30M annual revenue through kingdom-focused business strategies and leadership development.",
+    mainImage: null,
+    publishedAt: new Date().toISOString(),
+    categories: ["Construction"]
   },
   {
+    _id: "fallback2",
     title: "Lime Media",
-    description:
-      "Partnered to implement faith-based principles in business operations, resulting in sustainable growth and improved company culture.",
-    image: "/placeholder.svg?height=400&width=600",
-    tag: "Media",
+    slug: { current: "#" },
+    client: "Lime Media",
+    excerpt: "Partnered to implement faith-based principles in business operations, resulting in sustainable growth and improved company culture.",
+    mainImage: null,
+    publishedAt: new Date().toISOString(),
+    categories: ["Media"]
   },
   {
+    _id: "fallback3",
     title: "Kingdom Enterprise",
-    description:
-      "Developed a comprehensive strategy for integrating faith values into business practices, leading to increased employee engagement and customer loyalty.",
-    image: "/placeholder.svg?height=400&width=600",
-    tag: "Retail",
-  },
+    slug: { current: "#" },
+    client: "Kingdom Enterprise",
+    excerpt: "Developed a comprehensive strategy for integrating faith values into business practices, leading to increased employee engagement and customer loyalty.",
+    mainImage: null,
+    publishedAt: new Date().toISOString(),
+    categories: ["Retail"]
+  }
 ]
 
-export default function CaseStudies() {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, amount: 0.1 })
+export default async function CaseStudies() {
+  let caseStudies = []
+  
+  try {
+    caseStudies = await getCaseStudies()
+  } catch (error) {
+    console.error("Error fetching case studies:", error)
+  }
+  
+  // Use fallback data if no case studies are available from Sanity
+  if (!caseStudies || caseStudies.length === 0) {
+    caseStudies = fallbackCaseStudies
+  }
+  
+  // Only display up to 3 case studies on the homepage
+  const displayedCaseStudies = caseStudies.slice(0, 3)
 
   return (
-    <section id="case-studies" className="py-20">
-      <div className="container">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Case Studies</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Explore how we've helped businesses transform through kingdom principles.
-          </p>
-          <div className="w-20 h-1 bg-primary mx-auto mt-4"></div>
+    <section id="case-studies" className="py-16 md:py-24">
+      <div className="container px-4 sm:px-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 md:mb-16">
+          <div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
+              Case Studies
+            </h2>
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl">
+              Explore how we've helped businesses achieve digital transformation through strategic solutions.
+            </p>
+          </div>
+          <Link href="/case-studies" className="mt-6 md:mt-0">
+            <Button variant="outline" className="group w-full sm:w-auto text-sm">
+              View all case studies
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Button>
+          </Link>
         </div>
 
-        <div ref={ref} className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {caseStudies.map((study, index) => (
-            <div
-              key={study.title}
-              className={`group relative overflow-hidden rounded-lg transition-all duration-700 delay-${index * 100} ${
-                isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
-              }`}
-            >
-              <div className="relative h-64 w-full overflow-hidden">
-                <Image
-                  src={study.image || "/placeholder.svg"}
-                  alt={study.title}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm">
-                  {study.tag}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {displayedCaseStudies.map((caseStudy: any) => {
+            // Check if we have a valid image to display
+            const hasValidImage = caseStudy.mainImage && 
+                                caseStudy.mainImage.asset && 
+                                (caseStudy.mainImage.asset.url || caseStudy.mainImage.asset._ref);
+            
+            // Get the image URL using urlFor if we have a reference
+            const imageUrl = hasValidImage ? 
+              (caseStudy.mainImage.asset.url || urlFor(caseStudy.mainImage).url()) : 
+              null;
+              
+            return (
+              <Link
+                key={caseStudy._id}
+                href={caseStudy.slug.current !== "#" ? `/case-studies/${caseStudy.slug.current}` : "#"}
+                className="group flex flex-col h-full"
+              >
+                <div className="overflow-hidden rounded-lg mb-4">
+                  <div className="relative aspect-[4/3]">
+                    {imageUrl ? (
+                      <Image
+                        src={imageUrl}
+                        alt={caseStudy.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-secondary flex items-center justify-center">
+                        <p className="text-secondary-foreground">{caseStudy.categories && caseStudy.categories[0] || "Case Study"}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="p-6 bg-card">
-                <h3 className="text-xl font-bold mb-2">{study.title}</h3>
-                <p className="text-muted-foreground mb-4">{study.description}</p>
-                <Button variant="link" className="p-0 h-auto font-medium">
-                  Read Case Study <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 group-hover:text-primary transition-colors">
+                  {caseStudy.title}
+                </h3>
+                {caseStudy.client && (
+                  <p className="text-sm sm:text-base text-muted-foreground mb-2">
+                    Client: {caseStudy.client}
+                  </p>
+                )}
+                <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
+                  {format(new Date(caseStudy.publishedAt), "MMMM d, yyyy")}
+                </p>
+                <p className="text-sm sm:text-base line-clamp-3 text-muted-foreground mt-auto">
+                  {caseStudy.excerpt}
+                </p>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>

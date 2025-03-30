@@ -6,6 +6,7 @@ import CaseStudies from "@/components/case-studies"
 import BlogPreview from "@/components/blog-preview"
 import Contact from "@/components/contact"
 import CTA from "@/components/cta"
+import { Suspense } from "react"
 
 export default function Home() {
   return (
@@ -13,9 +14,15 @@ export default function Home() {
       <Hero />
       <About />
       <Services />
-      <Testimonials />
-      <CaseStudies />
-      <BlogPreview />
+      <Suspense fallback={<div className="py-24 bg-secondary/20"></div>}>
+        <Testimonials />
+      </Suspense>
+      <Suspense fallback={<div className="py-24"></div>}>
+        <CaseStudies />
+      </Suspense>
+      <Suspense fallback={<div className="py-24 bg-secondary/10"></div>}>
+        <BlogPreview />
+      </Suspense>
       <CTA />
       <Contact />
     </>

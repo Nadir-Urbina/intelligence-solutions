@@ -1,55 +1,87 @@
-"use client"
+import Image from "next/image"
+import { getTestimonials } from "@/src/sanity/lib/client"
+import { urlFor } from "@/src/sanity/lib/client"
 
-import { useRef } from "react"
-import { useInView } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
-import { Quote } from "lucide-react"
-
-const testimonials = [
+// Fallback testimonials data when none is available from Sanity
+const fallbackTestimonials = [
   {
-    quote:
-      "So blessed to have Tom Ledbetter of Intelligence Solutions and Wayland Henderson of MJM Coaching & Consulting partnering and advising Nedderman Construction Group to see our Vision for our Kingdom Business unfold and be realized seeing us grow from $20 Million a year in revenue to $30 Million this year. The Lord spoke to us in a dream that Acceleration was coming to us from him. Tom and Wayland have been such a catlyst to seeing that dream and vision unfold for us over the last year! We have only just begun to step into where the Lord Jesus is taking us in the Kingdom Business Arena! 🙌🔥🕊🙏",
+    _id: "fallback1",
     author: "Nedderman Construction Group",
-    title: "Testimonial from Nederman Construction",
+    title: "Testimonial from Nedderman Construction",
+    order: 1,
+    quote: "So blessed to have Tom Ledbetter of Intelligence Solutions and Wayland Henderson of MJM Coaching & Consulting partnering and advising Nedderman Construction Group to see our Vision for our Kingdom Business unfold and be realized seeing us grow from $20 Million a year in revenue to $30 Million this year."
   },
   {
-    quote:
-      "I've been honored to be a small part of the God Story that is Lime Media these past 17 years. Watching my friend Heath follow God's blueprint in all these seasons has been a rich process of seeing blessed surrender. There's a better way to do business and it starts with making God the Chief Executive Officer. \"Live your BEST life and choose FAITH, not FEAR.\"",
+    _id: "fallback2",
     author: "Heath Hill",
     title: "Lime Media; Kingdom Friendship🌍",
-  },
+    order: 2,
+    quote: "I've been honored to be a small part of the God Story that is Lime Media these past 17 years. There's a better way to do business and it starts with making God the Chief Executive Officer."
+  }
 ]
 
-export default function Testimonials() {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, amount: 0.2 })
+export default async function Testimonials() {
+  let testimonials = []
+  
+  try {
+    testimonials = await getTestimonials()
+  } catch (error) {
+    console.error("Error fetching testimonials:", error)
+  }
+  
+  // Use fallback data if no testimonials are available from Sanity
+  if (!testimonials || testimonials.length === 0) {
+    testimonials = fallbackTestimonials
+  }
 
   return (
-    <section className="py-20 bg-secondary/30">
-      <div className="container">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Client Testimonials</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Hear from businesses we've helped transform through kingdom principles.
+    <section id="testimonials" className="py-16 md:py-24 bg-secondary/20">
+      <div className="container px-4 sm:px-6">
+        <div className="mx-auto text-center mb-10 md:mb-16">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
+            Client Testimonials
+          </h2>
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-3xl mx-auto">
+            Don't just take our word for it — hear what our clients have to say about their experiences working with us.
           </p>
-          <div className="w-20 h-1 bg-primary mx-auto mt-4"></div>
         </div>
 
-        <div ref={ref} className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {testimonials.map((testimonial, index) => (
-            <Card
-              key={index}
-              className={`transition-all duration-700 delay-${index * 200} ${
-                isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
-              }`}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {testimonials.map((testimonial: any) => (
+            <div
+              key={testimonial._id}
+              className="bg-background rounded-lg p-5 sm:p-8 shadow-sm flex flex-col h-full"
             >
-              <CardContent className="p-8">
-                <Quote className="h-10 w-10 text-primary/30 mb-4" />
-                <h3 className="text-xl font-semibold mb-4">{testimonial.title}</h3>
-                <p className="text-muted-foreground mb-6 italic">"{testimonial.quote}"</p>
-                <p className="font-medium">— {testimonial.author}</p>
-              </CardContent>
-            </Card>
+              <div className="mb-4 sm:mb-6">
+                <div className="flex items-center">
+                  <div className="relative w-10 sm:w-12 h-10 sm:h-12 rounded-full overflow-hidden flex-shrink-0">
+                    {testimonial.image && typeof urlFor(testimonial.image)?.url === 'function' ? (
+                      <Image
+                        src={urlFor(testimonial.image).url()}
+                        alt={testimonial.author || 'Client'}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-medium">
+                          {testimonial.author && testimonial.author.charAt(0) || '?'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="ml-3 sm:ml-4">
+                    <h4 className="font-semibold text-sm sm:text-base">{testimonial.author || 'Client'}</h4>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      {testimonial.title || ''}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <blockquote className="flex-1 italic text-sm sm:text-base text-muted-foreground">
+                "{testimonial.quote || 'No testimonial provided'}"
+              </blockquote>
+            </div>
           ))}
         </div>
       </div>

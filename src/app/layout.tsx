@@ -1,46 +1,36 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter, Playfair_Display } from "next/font/google"
 import "./globals.css"
-import Navbar from "@/components/navbar"
-import Footer from "@/components/footer"
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
+import { cn } from '@/lib/utils'
+import Header from "@/components/header"
+import Footer from "@/components/footer"
+import { Toaster } from "@/components/ui/toaster"
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-})
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-})
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Intelligence Solutions | Your Business on Kingdom Mission",
-  description:
-    "Empowering marketplace leaders to build enterprise as a calling. See what kingdom culture in the marketplace can do for your business.",
-    generator: 'v0.dev'
+  title: "Intelligence Solutions | Kingdom Business Consultancy",
+  description: "Business strategy, marketing, and leadership development solutions with biblical principles.",
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${playfair.variable} font-sans`}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <Navbar />
-          <main>{children}</main>
+      <body className={cn("min-h-screen antialiased", inter.className)}>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+          <Header />
+          <main>
+            {children}
+          </main>
           <Footer />
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
   )
 }
-
-
-
-import './globals.css'

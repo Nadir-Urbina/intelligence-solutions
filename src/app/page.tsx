@@ -17,9 +17,11 @@ export default function Home() {
       <Suspense fallback={<div className="py-24 bg-secondary/20"></div>}>
         <Testimonials />
       </Suspense>
+      {/* Case Studies section temporarily hidden
       <Suspense fallback={<div className="py-24"></div>}>
         <CaseStudies />
       </Suspense>
+      */}
       <Suspense fallback={<div className="py-24 bg-secondary/10"></div>}>
         <BlogPreview />
       </Suspense>

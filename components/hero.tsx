@@ -42,8 +42,16 @@ export default function Hero() {
             isInView ? "opacity-100" : "opacity-0 translate-x-12"
           }`}
         >
-          <div className="relative w-full max-w-md aspect-square">
-            <Image src="/logo.png" alt="Intelligence Solutions" fill className="object-contain" priority />
+          <div className="relative w-full h-[450px] rounded-xl shadow-2xl overflow-hidden">
+            <Image 
+              src="/intelligenceSolutionsHero.webp" 
+              alt="Intelligence Solutions" 
+              fill 
+              className="object-cover"
+              style={{ objectPosition: 'center 30%' }}
+              priority 
+            />
+            <div className="absolute inset-0 bg-primary/10 mix-blend-overlay"></div>
           </div>
         </div>
       </div>

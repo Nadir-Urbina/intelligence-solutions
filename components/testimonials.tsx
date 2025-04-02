@@ -29,12 +29,14 @@ export default async function Testimonials() {
   
   try {
     testimonials = await getTestimonials()
+    // If no testimonials are returned, use fallback data
+    if (!testimonials || testimonials.length === 0) {
+      console.log("No testimonials found, using fallback data")
+      testimonials = fallbackTestimonials
+    }
   } catch (error) {
     console.error("Error fetching testimonials:", error)
-  }
-  
-  // Use fallback data if no testimonials are available from Sanity
-  if (!testimonials || testimonials.length === 0) {
+    // Use fallback data on error
     testimonials = fallbackTestimonials
   }
 
@@ -122,7 +124,7 @@ export default async function Testimonials() {
                         href={testimonial.companyLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs sm:text-sm text-primary hover:underline mt-1 inline-block"
+                        className="text-xs sm:text-sm bg-primary text-primary-foreground hover:bg-primary/90 px-2 py-1 rounded mt-1 inline-block"
                       >
                         Visit Website
                       </a>

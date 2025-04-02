@@ -17,7 +17,9 @@ export const urlFor = (source: any) => {
 // Fetch functions for each content type
 export async function getTestimonials() {
   return client.fetch(
-    `*[_type == "testimonial"] | order(_createdAt desc)`
+    `*[_type == "testimonial"] | order(_createdAt desc)`,
+    {},
+    { next: { tags: ['testimonials'] } }
   )
 }
 
@@ -32,7 +34,9 @@ export async function getCaseStudies() {
       mainImage,
       publishedAt,
       categories
-    }`
+    }`,
+    {},
+    { next: { tags: ['caseStudies'] } }
   )
 }
 
@@ -49,7 +53,8 @@ export async function getCaseStudyBySlug(slug: string) {
       excerpt,
       body
     }`,
-    { slug }
+    { slug },
+    { next: { tags: [`caseStudy-${slug}`] } }
   )
 }
 
@@ -64,7 +69,9 @@ export async function getBlogPosts() {
       mainImage,
       publishedAt,
       categories
-    }`
+    }`,
+    {},
+    { next: { tags: ['blogPosts'] } }
   )
 }
 
@@ -81,10 +88,15 @@ export async function getBlogPostBySlug(slug: string) {
       excerpt,
       body
     }`,
-    { slug }
+    { slug },
+    { next: { tags: [`blogPost-${slug}`] } }
   )
 }
 
 export async function getContactInfo() {
-  return client.fetch(`*[_type == "contactInfo"][0]`)
+  return client.fetch(
+    `*[_type == "contactInfo"][0]`,
+    {},
+    { next: { tags: ['contactInfo'] } }
+  )
 } 

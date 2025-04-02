@@ -48,6 +48,8 @@ export default function Contact() {
         }
       } catch (error) {
         console.error("Error fetching contact info:", error)
+        // On error, ensure we're using the fallback data
+        setContactInfo(fallbackContactInfo)
       }
     }
     

@@ -83,4 +83,8 @@ export async function getBlogPostBySlug(slug: string) {
     }`,
     { slug }
   )
+}
+
+export async function getContactInfo() {
+  return client.fetch(`*[_type == "contactInfo"][0]`)
 } 

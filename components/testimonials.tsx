@@ -1,6 +1,6 @@
 import Image from "next/image"
 import { getTestimonials } from "@/src/sanity/lib/client"
-import { urlFor } from "@/src/sanity/lib/client"
+import { SanityImage } from "@/components/ui/optimized-image"
 
 // Fallback testimonials data when none is available from Sanity
 const fallbackTestimonials = [
@@ -55,16 +55,24 @@ export default async function Testimonials() {
               <div className="mb-4 sm:mb-6">
                 <div className="flex items-center">
                   <div className="relative w-10 sm:w-12 h-10 sm:h-12 rounded-full overflow-hidden flex-shrink-0">
-                    {testimonial.image && typeof urlFor(testimonial.image)?.url === 'function' ? (
-                      <Image
-                        src={urlFor(testimonial.image).url()}
+                    {testimonial.image && testimonial.image.asset ? (
+                      <SanityImage
+                        image={testimonial.image}
                         alt={testimonial.author || 'Client'}
                         fill
+                        sizes="50px"
                         className="object-cover"
+                        wrapperClassName="w-full h-full"
                       />
                     ) : (
-                      <div className="w-full h-full bg-primary/10 flex items-center justify-center">
-                        <span className="text-primary font-medium">
+                      <div className="w-full h-full bg-primary/10 flex items-center justify-center relative">
+                        <Image 
+                          src="/placeholder-user.jpg"
+                          alt={testimonial.author || 'Client'}
+                          fill
+                          className="object-cover opacity-40"
+                        />
+                        <span className="text-primary font-medium absolute z-10">
                           {testimonial.author && testimonial.author.charAt(0) || '?'}
                         </span>
                       </div>

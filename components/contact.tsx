@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useRef, useState } from "react"
+import { useRef, useState, useEffect } from "react"
 import { useInView } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,10 +10,20 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Mail, Phone, MapPin, Send } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
+import { getContactInfo } from "@/src/sanity/lib/client"
+
+// Fallback contact information
+const fallbackContactInfo = {
+  email: "info@intelligencesolutions.com",
+  phone: "(555) 123-4567",
+  location: "Dallas, Texas",
+  description: "We'd love to hear from you. Fill out the form and we'll get back to you as soon as possible."
+}
 
 export default function Contact() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, amount: 0.2 })
+  const [contactInfo, setContactInfo] = useState(fallbackContactInfo)
   const [formState, setFormState] = useState({
     name: "",
     email: "",
@@ -22,6 +32,27 @@ export default function Contact() {
     message: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Fetch contact information from Sanity
+  useEffect(() => {
+    async function fetchContactInfo() {
+      try {
+        const data = await getContactInfo()
+        if (data) {
+          setContactInfo({
+            email: data.email || fallbackContactInfo.email,
+            phone: data.phone || fallbackContactInfo.phone,
+            location: data.location || fallbackContactInfo.location,
+            description: data.description || fallbackContactInfo.description
+          })
+        }
+      } catch (error) {
+        console.error("Error fetching contact info:", error)
+      }
+    }
+    
+    fetchContactInfo()
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormState({
@@ -96,7 +127,7 @@ export default function Contact() {
           >
             <h3 className="text-xl sm:text-2xl font-bold mb-4 md:mb-6">Get In Touch</h3>
             <p className="text-sm sm:text-base text-muted-foreground mb-6 md:mb-8">
-              We'd love to hear from you. Fill out the form and we'll get back to you as soon as possible.
+              {contactInfo.description}
             </p>
 
             <div className="space-y-4 sm:space-y-6">
@@ -104,7 +135,7 @@ export default function Contact() {
                 <Mail className="h-5 w-5 sm:h-6 sm:w-6 text-primary mr-3 sm:mr-4 mt-0.5" />
                 <div>
                   <h4 className="font-bold text-sm sm:text-base">Email</h4>
-                  <p className="text-sm text-muted-foreground">info@intelligencesolutions.com</p>
+                  <p className="text-sm text-muted-foreground">{contactInfo.email}</p>
                 </div>
               </div>
 
@@ -112,7 +143,7 @@ export default function Contact() {
                 <Phone className="h-5 w-5 sm:h-6 sm:w-6 text-primary mr-3 sm:mr-4 mt-0.5" />
                 <div>
                   <h4 className="font-bold text-sm sm:text-base">Phone</h4>
-                  <p className="text-sm text-muted-foreground">(555) 123-4567</p>
+                  <p className="text-sm text-muted-foreground">{contactInfo.phone}</p>
                 </div>
               </div>
 
@@ -120,7 +151,7 @@ export default function Contact() {
                 <MapPin className="h-5 w-5 sm:h-6 sm:w-6 text-primary mr-3 sm:mr-4 mt-0.5" />
                 <div>
                   <h4 className="font-bold text-sm sm:text-base">Location</h4>
-                  <p className="text-sm text-muted-foreground">Dallas, Texas</p>
+                  <p className="text-sm text-muted-foreground">{contactInfo.location}</p>
                 </div>
               </div>
             </div>

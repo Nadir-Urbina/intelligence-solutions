@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import { getCaseStudies } from "@/src/sanity/lib/client"
 import { format } from "date-fns"
-import { urlFor } from "@/src/sanity/lib/client"
+import { SanityImage } from "@/components/ui/optimized-image"
 
 // Fallback case studies when none are available from Sanity
 const fallbackCaseStudies = [
@@ -79,16 +79,6 @@ export default async function CaseStudies() {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {displayedCaseStudies.map((caseStudy: any) => {
-            // Check if we have a valid image to display
-            const hasValidImage = caseStudy.mainImage && 
-                                caseStudy.mainImage.asset && 
-                                (caseStudy.mainImage.asset.url || caseStudy.mainImage.asset._ref);
-            
-            // Get the image URL using urlFor if we have a reference
-            const imageUrl = hasValidImage ? 
-              (caseStudy.mainImage.asset.url || urlFor(caseStudy.mainImage).url()) : 
-              null;
-              
             return (
               <Link
                 key={caseStudy._id}
@@ -96,17 +86,26 @@ export default async function CaseStudies() {
                 className="group flex flex-col h-full"
               >
                 <div className="overflow-hidden rounded-lg mb-4">
-                  <div className="relative aspect-[4/3]">
-                    {imageUrl ? (
-                      <Image
-                        src={imageUrl}
+                  <div className="relative aspect-[4/3] w-full h-[240px]">
+                    {caseStudy.mainImage && caseStudy.mainImage.asset ? (
+                      <SanityImage
+                        image={caseStudy.mainImage}
                         alt={caseStudy.title}
                         fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="transition-transform duration-300 group-hover:scale-105 object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-secondary flex items-center justify-center">
-                        <p className="text-secondary-foreground">{caseStudy.categories && caseStudy.categories[0] || "Case Study"}</p>
+                      <div className="w-full h-full bg-secondary flex items-center justify-center relative">
+                        <Image
+                          src="/placeholder.jpg"
+                          alt={caseStudy.title}
+                          fill
+                          className="object-cover opacity-30"
+                        />
+                        <p className="text-secondary-foreground absolute z-10">
+                          {caseStudy.categories && caseStudy.categories[0] || "Case Study"}
+                        </p>
                       </div>
                     )}
                   </div>

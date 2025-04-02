@@ -22,6 +22,18 @@ export default {
       validation: (Rule: any) => Rule.required(),
     },
     {
+      name: 'companyLink',
+      title: 'Company Link',
+      type: 'url',
+      description: 'The website URL of the company',
+    },
+    {
+      name: 'videoLink',
+      title: 'Video Link',
+      type: 'url',
+      description: 'YouTube or Vimeo link for video testimonials. If provided, video will be shown instead of text quote.',
+    },
+    {
       name: 'image',
       title: 'Image',
       type: 'image',

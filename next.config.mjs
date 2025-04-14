@@ -30,16 +30,7 @@ const nextConfig = {
   },
   redirects: async () => {
     return [
-      {
-        source: '/case-studies',
-        destination: '/case-studies',
-        permanent: true,
-      },
-      {
-        source: '/blog',
-        destination: '/blog',
-        permanent: true,
-      },
+      // Removed redirect loops
     ]
   },
 }

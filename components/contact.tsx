@@ -10,7 +10,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Mail, Phone, MapPin, Send } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
-import { getContactInfo } from "@/src/sanity/lib/client"
 
 // Fallback contact information
 const fallbackContactInfo = {
@@ -33,11 +32,17 @@ export default function Contact() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Fetch contact information from Sanity
+  // Fetch contact information from API endpoint instead of Sanity directly
   useEffect(() => {
     async function fetchContactInfo() {
       try {
-        const data = await getContactInfo()
+        const response = await fetch('/api/contact')
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch contact information')
+        }
+        
+        const data = await response.json()
         if (data) {
           setContactInfo({
             email: data.email || fallbackContactInfo.email,
